@@ -130,11 +130,18 @@ def convert_files(
             dst
         ]
         try:
-            subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            result = subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         except subprocess.CalledProcessError as e:
-            status_callback(f"Error converting {os.path.basename(src)}")
-            logging.error(f"Error converting {src}: {e}")
-            Logger.error(f"conversion: Error converting {src}: {e}")
+            error_msg = (
+                f"Error converting {src}:\n"
+                f"Command: {' '.join(cmd)}\n"
+                f"Exit code: {e.returncode}\n"
+                f"STDOUT:\n{e.stdout.decode(errors='replace')}\n"
+                f"STDERR:\n{e.stderr.decode(errors='replace')}\n"
+            )
+            status_callback(f"Error converting {os.path.basename(src)} (see log for details)")
+            logging.error(error_msg)
+            Logger.error(f"conversion: {error_msg}")
             failed_files.append(src)
             continue
 

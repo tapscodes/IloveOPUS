@@ -8,6 +8,8 @@ from mutagen.mp3 import MP3
 from mutagen.id3 import ID3, APIC
 from mutagen.mp4 import MP4, MP4Cover
 from mutagen.flac import FLAC
+from PIL import Image
+import io
 
 # Get the user's Downloads folder, or home if not present
 def get_downloads_folder():
@@ -29,9 +31,15 @@ def extract_cover_art(src):
             for tag in audio.tags.values():
                 if isinstance(tag, APIC):
                     pic = Picture()
-                    pic.data = tag.data
+                    # Resize image data to 1000x1000
+                    img = Image.open(io.BytesIO(tag.data))
+                    img = img.convert("RGB")
+                    img = img.resize((1000, 1000), Image.LANCZOS)
+                    buf = io.BytesIO()
+                    img.save(buf, format="JPEG")
+                    pic.data = buf.getvalue()
                     pic.type = 3
-                    pic.mime = tag.mime
+                    pic.mime = "image/jpeg"
                     pic.desc = tag.desc or "Cover"
                     return pic
         elif ext in (".m4a", ".alac"):
@@ -40,15 +48,33 @@ def extract_cover_art(src):
             if covers:
                 cover = covers[0]
                 pic = Picture()
-                pic.data = cover if isinstance(cover, bytes) else cover
+                # Resize image data to 1000x1000
+                img = Image.open(io.BytesIO(cover if isinstance(cover, bytes) else cover))
+                img = img.convert("RGB")
+                img = img.resize((1000, 1000), Image.LANCZOS)
+                buf = io.BytesIO()
+                img.save(buf, format="JPEG")
+                pic.data = buf.getvalue()
                 pic.type = 3
-                pic.mime = "image/jpeg" if cover.imageformat == MP4Cover.FORMAT_JPEG else "image/png"
+                pic.mime = "image/jpeg"
                 pic.desc = "Cover"
                 return pic
         elif ext == ".flac":
             audio = FLAC(src)
             if audio.pictures:
-                return audio.pictures[0]
+                orig_pic = audio.pictures[0]
+                # Resize image data to 1000x1000
+                img = Image.open(io.BytesIO(orig_pic.data))
+                img = img.convert("RGB")
+                img = img.resize((1000, 1000), Image.LANCZOS)
+                buf = io.BytesIO()
+                img.save(buf, format="JPEG")
+                pic = Picture()
+                pic.data = buf.getvalue()
+                pic.type = 3
+                pic.mime = "image/jpeg"
+                pic.desc = orig_pic.desc or "Cover"
+                return pic
     except Exception:
         pass
     return None

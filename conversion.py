@@ -110,11 +110,19 @@ def convert_files(
     convert_in_place=True,
     delete_original=False
 ):
+    import logging
+    from kivy.logger import Logger
+    logging.basicConfig(
+        filename="conversion_errors.log",
+        filemode="a",
+        level=logging.ERROR,
+        format="%(asctime)s %(levelname)s: %(message)s"
+    )
     total = len(file_list)
+    failed_files = []
     for idx, src in enumerate(file_list):
         status_callback(f"Converting {os.path.basename(src)} ({idx+1}/{total})...")
         dst = get_output_filename(src, convert_in_place=convert_in_place)
-        # ffmpeg command to convert to OPUS
         cmd = [
             "ffmpeg", "-y", "-i", src,
             "-c:a", "libopus", "-b:a", "320k",
@@ -123,30 +131,36 @@ def convert_files(
         ]
         try:
             subprocess.run(cmd, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        except subprocess.CalledProcessError:
+        except subprocess.CalledProcessError as e:
             status_callback(f"Error converting {os.path.basename(src)}")
+            logging.error(f"Error converting {src}: {e}")
+            Logger.error(f"conversion: Error converting {src}: {e}")
+            failed_files.append(src)
             continue
 
-        # --- Extract and embed cover art from source file ---
         try:
             pic = extract_cover_art(src, resize_cover=resize_cover)
             if pic:
                 import base64
                 opus = OggOpus(dst)
-                # METADATA_BLOCK_PICTURE must be base64-encoded for Opus
                 opus["METADATA_BLOCK_PICTURE"] = [base64.b64encode(pic.write()).decode("ascii")]
                 opus.save()
-            # else: no cover art found, skip embedding
         except Exception as e:
             status_callback(f"Failed to embed cover art: {e}")
+            logging.error(f"Failed to embed cover art for {src}: {e}")
+            Logger.error(f"conversion: Failed to embed cover art for {src}: {e}")
 
-        # Delete original file if requested and conversion succeeded
         if delete_original:
             try:
                 os.remove(src)
             except Exception as e:
                 status_callback(f"Failed to delete original: {e}")
+                logging.error(f"Failed to delete original file {src}: {e}")
+                Logger.error(f"conversion: Failed to delete original file {src}: {e}")
 
         progress_callback(int((idx+1)/total*100))
-    status_callback("Done!")
+    if failed_files:
+        status_callback(f"Done! {len(failed_files)} file(s) failed. See log for details.")
+    else:
+        status_callback("Done!")
     progress_callback(100)

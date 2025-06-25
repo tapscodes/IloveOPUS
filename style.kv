@@ -37,11 +37,18 @@
 
 <Button>:
     background_normal: ''
-    background_color: 0.1, 0.3, 0.6, 1
+    background_color: 0, 0, 0, 0  # Make background transparent so canvas is visible
     color: 1, 1, 1, 1
     font_size: 16
     size_hint_y: None
     height: 40
+    canvas.before:
+        Color:
+            rgba: 0.1, 0.3, 0.6, 1  # Button color
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [5,]  # roundness
 
 <Label>:
     color: 1, 1, 1, 1

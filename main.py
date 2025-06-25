@@ -32,8 +32,11 @@ class AudioConverterApp(App):
             file_chooser = FileChooserListView(
                 path=get_downloads_folder(),
                 filters=file_patterns,
-                multiselect=True
+                multiselect=True,
+                show_hidden=False,
+                dirselect=False
             )
+
             popup_layout = BoxLayout(orientation='vertical')
             popup_layout.add_widget(file_chooser)
 
@@ -46,13 +49,11 @@ class AudioConverterApp(App):
 
             popup = Popup(title="Select Audio Files",
                           content=popup_layout,
-                          size_hint=(0.9, 0.9))
+                          size_hint=(0.95, 0.95))
 
             def do_select(*a):
-                # Ensure self.selected_files is always a list (never None)
                 if self.selected_files is None:
                     self.selected_files = []
-                # Add new selections to the existing list, avoiding duplicates
                 new_files = [f for f in file_chooser.selection if f not in self.selected_files]
                 self.selected_files = list(self.selected_files) + new_files
                 self.file_list.files = self.selected_files
@@ -72,10 +73,16 @@ class AudioConverterApp(App):
 
         btn_layout = Factory.ButtonRow()
         select_btn = Button(text="Select Audio Files")
+        select_folder_btn = Button(text="Select Folder")
+        clear_btn = Button(text="Clear List")
         convert_btn = Button(text="Convert to 320kbps OPUS")
         select_btn.bind(on_release=open_file_chooser)
+        select_folder_btn.bind(on_release=lambda x: self.open_folder_chooser())
+        clear_btn.bind(on_release=lambda x: self.clear_selected_files())
         convert_btn.bind(on_release=self.start_conversion)
         btn_layout.add_widget(select_btn)
+        btn_layout.add_widget(select_folder_btn)
+        btn_layout.add_widget(clear_btn)
         btn_layout.add_widget(convert_btn)
         root.add_widget(btn_layout)
 
@@ -88,6 +95,57 @@ class AudioConverterApp(App):
         self.bind(progress=lambda *a: setattr(self.progress_bar, 'value', self.progress))
 
         return root
+
+    def clear_selected_files(self):
+        self.selected_files = []
+        self.file_list.files = []
+
+    def open_folder_chooser(self):
+        # Open a FileChooser in folder selection mode
+        file_chooser = FileChooserListView(
+            path=get_downloads_folder(),
+            filters=[],  # Must be a list, not None
+            multiselect=False,
+            dirselect=True,
+            show_hidden=False
+        )
+
+        popup_layout = BoxLayout(orientation='vertical')
+        popup_layout.add_widget(file_chooser)
+
+        btn_layout = Factory.ButtonRow()
+        select_btn = Button(text="Select Folder")
+        cancel_btn = Button(text="Cancel")
+        btn_layout.add_widget(select_btn)
+        btn_layout.add_widget(cancel_btn)
+        popup_layout.add_widget(btn_layout)
+
+        popup = Popup(title="Select Folder",
+                      content=popup_layout,
+                      size_hint=(0.95, 0.95))
+
+        def do_select_folder(*a):
+            folder = file_chooser.selection[0] if file_chooser.selection else file_chooser.path
+            if not os.path.isdir(folder):
+                self.status_text = "Please select a folder."
+                return
+            files_in_folder = [
+                os.path.join(folder, f)
+                for f in os.listdir(folder)
+                if os.path.isfile(os.path.join(folder, f)) and os.path.splitext(f)[1].lower() in SUPPORTED_EXTS
+            ]
+            self.selected_files = list(set(self.selected_files + files_in_folder))
+            self.file_list.files = self.selected_files
+            popup.dismiss()
+
+        def do_cancel(*a):
+            popup.dismiss()
+
+        select_btn.bind(on_release=do_select_folder)
+        cancel_btn.bind(on_release=do_cancel)
+        file_chooser.bind(on_submit=lambda *a: do_select_folder())
+
+        popup.open()
 
     def start_conversion(self, instance):
         if not self.selected_files:

@@ -1,0 +1,38 @@
+name: Build iLoveOPUS Mac
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-macos:
+    name: iLoveOPUSMac
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          brew install python3
+          python3 -m pip install --upgrade pip
+          pip3 install kivy mutagen pillow pyinstaller
+      - name: Download FFmpeg binary
+        run: |
+          curl -L -o ffmpeg.zip https://evermeet.cx/ffmpeg/getrelease/zip
+          unzip ffmpeg.zip -d ffmpeg_bin
+      - name: Add FFmpeg to PATH
+        run: |
+          echo "${{ github.workspace }}/ffmpeg_bin" >> $GITHUB_PATH
+      - name: Build executable
+        run: |
+          pyinstaller --onefile main.py --name iLoveOPUSMac --add-data "style.kv:."
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: iLoveOPUSMac
+          path: dist/iLoveOPUSMac

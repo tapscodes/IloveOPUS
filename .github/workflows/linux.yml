@@ -1,0 +1,39 @@
+name: Build iLoveOPUS Linux
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-linux:
+    name: iLoveOPUSLinux
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip python3-dev build-essential libgl1-mesa-dev
+          python -m pip install --upgrade pip
+          pip install kivy mutagen pillow pyinstaller
+      - name: Download FFmpeg binary
+        run: |
+          curl -L -o ffmpeg.tar.xz https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2025-06-13-13-43/ffmpeg-n7.1.1-22-g0f1fe3d153-linux64-gpl-7.1.tar.xz
+          tar -xf ffmpeg.tar.xz
+      - name: Add FFmpeg to PATH
+        run: |
+          echo "${{ github.workspace }}/ffmpeg-n7.1.1-22-g0f1fe3d153-linux64-gpl-7.1/bin" >> $GITHUB_PATH
+      - name: Build executable
+        run: |
+          pyinstaller --onefile main.py --name iLoveOPUSLinux --add-data "style.kv:."
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: iLoveOPUSLinux
+          path: dist/iLoveOPUSLinux

@@ -1,3 +1,6 @@
+import os
+os.environ.setdefault("KIVY_GL_BACKEND", "angle_sdl2")
+
 import threading
 import os
 from kivy.app import App

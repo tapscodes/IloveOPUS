@@ -29,6 +29,7 @@ jobs:
           echo "${{ github.workspace }}/ffmpeg_bin/ffmpeg-n7.1.1-22-g0f1fe3d153-winarm64-gpl-7.1/bin" >> $GITHUB_PATH
       - name: Build executable
         run: |
+          set KIVY_GL_BACKEND=angle_sdl2
           pyinstaller --onefile main.py --name iLoveOPUSWin
       - name: Upload artifact
         uses: actions/upload-artifact@v4

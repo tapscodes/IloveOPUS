@@ -125,7 +125,7 @@ def convert_files(
         dst = get_output_filename(src, convert_in_place=convert_in_place)
         cmd = [
             "ffmpeg", "-y", "-i", src,
-            "-c:a", "libopus", "-b:a", "320k",
+            "-c:a", "libopus", "-b:a", "192k",
             "-map_metadata", "0",
             dst
         ]

@@ -133,7 +133,7 @@ class AudioConverterApp(App):
         select_btn = Button(text="Select Audio Files")
         select_folder_btn = Button(text="Select Folder")
         clear_btn = Button(text="Clear List")
-        convert_btn = Button(text="Convert to 320kbps OPUS")
+        convert_btn = Button(text="Convert to 192kbps OPUS")
         select_btn.bind(on_release=open_file_chooser)
         select_folder_btn.bind(on_release=lambda x: self.open_folder_chooser())
         clear_btn.bind(on_release=lambda x: self.clear_selected_files())

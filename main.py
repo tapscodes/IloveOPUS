@@ -8,6 +8,7 @@ from kivy.uix.label import Label
 from kivy.uix.progressbar import ProgressBar
 from kivy.uix.popup import Popup
 from kivy.properties import ListProperty, StringProperty, NumericProperty
+from kivy.lang import Builder
 
 from filelist import FileList
 from conversion import get_downloads_folder, convert_files
@@ -19,8 +20,11 @@ class AudioConverterApp(App):
     progress = NumericProperty(0)
 
     def build(self):
+        Builder.load_file("style.kv")
         self.title = "iLoveOPUS"
-        root = BoxLayout(orientation='vertical', padding=[10, 0, 10, 10], spacing=10)
+        # Use RootWidget for .kv styling
+        root = BoxLayout(orientation='vertical', spacing=10)
+        root.__class__.__name__ = "RootWidget"
 
         # Generate glob patterns from SUPPORTED_EXTS
         file_patterns = [f'*{ext}' for ext in SUPPORTED_EXTS]

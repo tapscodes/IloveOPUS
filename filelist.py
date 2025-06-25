@@ -8,8 +8,7 @@ class FileList(BoxLayout):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.orientation = 'vertical'
-        self.label = Label(text="Selected files:", size_hint_y=None, height=24)
+        self.label = Label(text="Selected files:")
         self.add_widget(self.label)
         self.file_labels = []
         self.update_files()
@@ -20,6 +19,6 @@ class FileList(BoxLayout):
             self.remove_widget(lbl)
         self.file_labels = []
         for f in self.files:
-            lbl = Label(text=os.path.basename(f), size_hint_y=None, height=24)
+            lbl = Label(text=os.path.basename(f))
             self.add_widget(lbl)
             self.file_labels.append(lbl)

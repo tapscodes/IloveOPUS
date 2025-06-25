@@ -1,0 +1,37 @@
+#:import get_color_from_hex kivy.utils.get_color_from_hex
+
+<RootWidget@BoxLayout>:
+    canvas.before:
+        Color:
+            rgba: 0, 0.12, 0.25, 1  # Navy blue
+
+<FileChooserListLayout>:
+    selection_color: 0, 1, 0, 1  # Green for selected files
+
+<FileChooserIconLayout>:
+    selection_color: 0, 1, 0, 1
+
+<Button>:
+    background_normal: ''
+    background_color: 0.1, 0.3, 0.6, 1  # Blue-ish
+    color: 1, 1, 1, 1
+    font_size: 16
+
+<Label>:
+    color: 1, 1, 1, 1
+    font_size: 16
+
+<ProgressBar>:
+    background_color: 0.05, 0.1, 0.2, 1
+    color: 0.2, 0.8, 0.2, 1
+
+<FileList>:
+    orientation: 'vertical'
+    spacing: 2
+    padding: [0, 0, 0, 0]
+    canvas.before:
+        Color:
+            rgba: 0, 0.12, 0.25, 0  # Transparent, but you can set to 1 for solid
+        Rectangle:
+            pos: self.pos
+            size: self.size

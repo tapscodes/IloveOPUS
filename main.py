@@ -1,8 +1,13 @@
+# Set KIVY_GL_BACKEND to sdl2 for Linux, angle_sdl2 for Windows
 import os
-os.environ.setdefault("KIVY_GL_BACKEND", "angle_sdl2")
+import sys
+if "KIVY_GL_BACKEND" not in os.environ:
+    if sys.platform.startswith("win"):
+        os.environ["KIVY_GL_BACKEND"] = "angle_sdl2"
+    else:
+        os.environ["KIVY_GL_BACKEND"] = "sdl2"
 
 import threading
-import os
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
@@ -241,10 +246,4 @@ class AudioConverterApp(App):
         )
 
 if __name__ == "__main__":
-    import sys
-    if getattr(sys, 'frozen', False):
-        # If running as a PyInstaller bundle, set KIVY_GL_BACKEND to angle_sdl2 or sdl2 for compatibility
-        import os
-        if "KIVY_GL_BACKEND" not in os.environ:
-            os.environ["KIVY_GL_BACKEND"] = "sdl2"
     AudioConverterApp().run()

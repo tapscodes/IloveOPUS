@@ -7,15 +7,16 @@ if not sys.stderr:
     os.environ['KIVY_NO_CONSOLELOG'] = '1'
 
 if getattr(sys, 'frozen', False):
-    # PyInstaller bundle: add ffmpeg bundled path to PATH
+    # Only use the bundled ffmpeg, do not prepend to PATH if not found
     ffmpeg_dirs = [
         os.path.join(sys._MEIPASS, "ffmpeg-n7.1.1-22-g0f1fe3d153-linux64-gpl-7.1", "bin"),  # Linux
         os.path.join(sys._MEIPASS, "ffmpeg_bin", "ffmpeg-n7.1.1-22-g0f1fe3d153-winarm64-gpl-7.1", "bin"),  # Windows
         os.path.join(sys._MEIPASS, "ffmpeg_bin"),  # macOS
     ]
     for d in ffmpeg_dirs:
-        if os.path.exists(d):
-            os.environ["PATH"] = d + os.pathsep + os.environ.get("PATH", "")
+        if os.path.exists(os.path.join(d, "ffmpeg")) or os.path.exists(os.path.join(d, "ffmpeg.exe")):
+            os.environ["PATH"] = d
+            break
     # Add PyInstaller temp path for resource loading (style.kv, etc.)
     from kivy.resources import resource_add_path
     resource_add_path(sys._MEIPASS)

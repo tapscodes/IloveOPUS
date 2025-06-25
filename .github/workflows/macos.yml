@@ -30,7 +30,7 @@ jobs:
           echo "${{ github.workspace }}/ffmpeg_bin" >> $GITHUB_PATH
       - name: Build executable
         run: |
-          pyinstaller --onefile main.py --name iLoveOPUSMac --add-data "style.kv:."
+          pyinstaller --onefile main.py --name iLoveOPUSMac --add-data "style.kv:." --add-data "$(python3 -c 'import kivy; import os; print(os.path.join(os.path.dirname(kivy.__file__), \"data\"))'):kivy/data"
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:

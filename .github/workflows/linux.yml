@@ -31,7 +31,7 @@ jobs:
           echo "${{ github.workspace }}/ffmpeg-n7.1.1-22-g0f1fe3d153-linux64-gpl-7.1/bin" >> $GITHUB_PATH
       - name: Build executable
         run: |
-          pyinstaller --onefile main.py --name iLoveOPUSLinux --add-data "style.kv:."
+          pyinstaller --onefile main.py --name iLoveOPUSLinux --add-data "style.kv:." --add-data "$(python3 -c 'import kivy; import os; print(os.path.join(os.path.dirname(kivy.__file__), \"data\"))'):kivy/data"
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:

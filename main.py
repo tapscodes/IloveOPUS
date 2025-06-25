@@ -21,6 +21,7 @@ class AudioConverterApp(App):
     progress = NumericProperty(0)
 
     def build(self):
+        # Load Kivy style file
         Builder.load_file("style.kv")
         self.title = "iLoveOPUS"
         root = Factory.RootWidget()
@@ -28,6 +29,7 @@ class AudioConverterApp(App):
         # Generate glob patterns from SUPPORTED_EXTS
         file_patterns = [f'*{ext}' for ext in SUPPORTED_EXTS]
 
+        # File chooser popup for selecting audio files
         def open_file_chooser(instance):
             file_chooser = FileChooserListView(
                 path=get_downloads_folder(),
@@ -51,6 +53,7 @@ class AudioConverterApp(App):
                           content=popup_layout,
                           size_hint=(0.95, 0.95))
 
+            # Add selected files to the list
             def do_select(*a):
                 if self.selected_files is None:
                     self.selected_files = []
@@ -68,9 +71,11 @@ class AudioConverterApp(App):
 
             popup.open()
 
+        # Main file list widget
         self.file_list = FileList()
         root.add_widget(self.file_list)
 
+        # Main control buttons
         btn_layout = Factory.ButtonRow()
         select_btn = Button(text="Select Audio Files")
         select_folder_btn = Button(text="Select Folder")
@@ -86,22 +91,25 @@ class AudioConverterApp(App):
         btn_layout.add_widget(convert_btn)
         root.add_widget(btn_layout)
 
+        # Progress bar and status label
         self.progress_bar = ProgressBar()
         root.add_widget(self.progress_bar)
         self.status_label = Label(text=self.status_text)
         root.add_widget(self.status_label)
 
+        # Bind status/progress updates to widgets
         self.bind(status_text=lambda *a: setattr(self.status_label, 'text', self.status_text))
         self.bind(progress=lambda *a: setattr(self.progress_bar, 'value', self.progress))
 
         return root
 
+    # Clear the selected files list
     def clear_selected_files(self):
         self.selected_files = []
         self.file_list.files = []
 
+    # Folder chooser popup for selecting all audio files in a folder
     def open_folder_chooser(self):
-        # Open a FileChooser in folder selection mode
         file_chooser = FileChooserListView(
             path=get_downloads_folder(),
             filters=[],  # Must be a list, not None
@@ -124,6 +132,7 @@ class AudioConverterApp(App):
                       content=popup_layout,
                       size_hint=(0.95, 0.95))
 
+        # Add all supported files from selected folder
         def do_select_folder(*a):
             folder = file_chooser.selection[0] if file_chooser.selection else file_chooser.path
             if not os.path.isdir(folder):
@@ -147,12 +156,14 @@ class AudioConverterApp(App):
 
         popup.open()
 
+    # Start conversion in a background thread
     def start_conversion(self, instance):
         if not self.selected_files:
             self.status_text = "No files selected."
             return
         threading.Thread(target=self._convert_files_thread, daemon=True).start()
 
+    # Threaded conversion logic
     def _convert_files_thread(self):
         def status_callback(text):
             self.status_text = text

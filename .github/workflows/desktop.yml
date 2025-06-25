@@ -23,6 +23,7 @@ jobs:
       - name: Install nasm
         run: choco install nasm
       - name: Build FFMPEG
+        shell: bash
         run: |
           git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg
           cd ffmpeg

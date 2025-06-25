@@ -10,6 +10,8 @@ from kivy.uix.popup import Popup
 from kivy.properties import ListProperty, StringProperty, NumericProperty
 from kivy.lang import Builder
 from kivy.factory import Factory
+from kivy.uix.togglebutton import ToggleButton
+from kivy.uix.checkbox import CheckBox
 
 from filelist import FileList
 from conversion import get_downloads_folder, convert_files
@@ -19,6 +21,8 @@ class AudioConverterApp(App):
     selected_files = ListProperty([])
     status_text = StringProperty("Ready")
     progress = NumericProperty(0)
+    resize_cover = True
+    search_subfolders = True
 
     def build(self):
         # Load Kivy style file
@@ -75,6 +79,19 @@ class AudioConverterApp(App):
         self.file_list = FileList()
         root.add_widget(self.file_list)
 
+        # Option checkboxes (fit to screen like buttons)
+        options_layout = Factory.ButtonRow()
+        from kivy.uix.label import Label
+        self.resize_checkbox = CheckBox(active=True)
+        self.subfolder_checkbox = CheckBox(active=True)
+        resize_label = Label(text="Resize Cover Art to 1000x1000 JPG", size_hint_y=None, height=40)
+        subfolder_label = Label(text="Search Subfolders When Selecting Folder", size_hint_y=None, height=40)
+        options_layout.add_widget(self.resize_checkbox)
+        options_layout.add_widget(resize_label)
+        options_layout.add_widget(self.subfolder_checkbox)
+        options_layout.add_widget(subfolder_label)
+        root.add_widget(options_layout)
+
         # Main control buttons
         btn_layout = Factory.ButtonRow()
         select_btn = Button(text="Select Audio Files")
@@ -101,7 +118,17 @@ class AudioConverterApp(App):
         self.bind(status_text=lambda *a: setattr(self.status_label, 'text', self.status_text))
         self.bind(progress=lambda *a: setattr(self.progress_bar, 'value', self.progress))
 
+        # Bind checkboxes to update options
+        self.resize_checkbox.bind(active=self.on_resize_checkbox)
+        self.subfolder_checkbox.bind(active=self.on_subfolder_checkbox)
+
         return root
+
+    def on_resize_checkbox(self, instance, value):
+        self.resize_cover = value
+
+    def on_subfolder_checkbox(self, instance, value):
+        self.search_subfolders = value
 
     # Clear the selected files list
     def clear_selected_files(self):
@@ -138,11 +165,20 @@ class AudioConverterApp(App):
             if not os.path.isdir(folder):
                 self.status_text = "Please select a folder."
                 return
-            files_in_folder = [
-                os.path.join(folder, f)
-                for f in os.listdir(folder)
-                if os.path.isfile(os.path.join(folder, f)) and os.path.splitext(f)[1].lower() in SUPPORTED_EXTS
-            ]
+            if self.search_subfolders:
+                files_in_folder = []
+                for rootdir, _, files in os.walk(folder):
+                    files_in_folder.extend([
+                        os.path.join(rootdir, f)
+                        for f in files
+                        if os.path.isfile(os.path.join(rootdir, f)) and os.path.splitext(f)[1].lower() in SUPPORTED_EXTS
+                    ])
+            else:
+                files_in_folder = [
+                    os.path.join(folder, f)
+                    for f in os.listdir(folder)
+                    if os.path.isfile(os.path.join(folder, f)) and os.path.splitext(f)[1].lower() in SUPPORTED_EXTS
+                ]
             self.selected_files = list(set(self.selected_files + files_in_folder))
             self.file_list.files = self.selected_files
             popup.dismiss()
@@ -169,7 +205,8 @@ class AudioConverterApp(App):
             self.status_text = text
         def progress_callback(val):
             self.progress = val
-        convert_files(self.selected_files, status_callback, progress_callback)
+        # Convert files with options set
+        convert_files(self.selected_files, status_callback, progress_callback, resize_cover=self.resize_cover)
 
 if __name__ == "__main__":
     AudioConverterApp().run()

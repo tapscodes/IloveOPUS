@@ -23,7 +23,7 @@ def get_output_filename(src):
     return base + ".opus"
 
 # Extract embedded cover art from the source file (mp3, m4a/alac, flac)
-def extract_cover_art(src):
+def extract_cover_art(src, resize_cover=True):
     ext = os.path.splitext(src)[1].lower()
     try:
         if ext == ".mp3":
@@ -31,15 +31,19 @@ def extract_cover_art(src):
             for tag in audio.tags.values():
                 if isinstance(tag, APIC):
                     pic = Picture()
-                    # Resize image data to 1000x1000
-                    img = Image.open(io.BytesIO(tag.data))
-                    img = img.convert("RGB")
-                    img = img.resize((1000, 1000), Image.LANCZOS)
-                    buf = io.BytesIO()
-                    img.save(buf, format="JPEG")
-                    pic.data = buf.getvalue()
+                    img_data = tag.data
+                    if resize_cover:
+                        img = Image.open(io.BytesIO(img_data))
+                        img = img.convert("RGB")
+                        img = img.resize((1000, 1000), Image.LANCZOS)
+                        buf = io.BytesIO()
+                        img.save(buf, format="JPEG")
+                        img_data = buf.getvalue()
+                        pic.mime = "image/jpeg"
+                    else:
+                        pic.mime = tag.mime
+                    pic.data = img_data
                     pic.type = 3
-                    pic.mime = "image/jpeg"
                     pic.desc = tag.desc or "Cover"
                     return pic
         elif ext in (".m4a", ".alac"):
@@ -48,31 +52,40 @@ def extract_cover_art(src):
             if covers:
                 cover = covers[0]
                 pic = Picture()
-                # Resize image data to 1000x1000
-                img = Image.open(io.BytesIO(cover if isinstance(cover, bytes) else cover))
-                img = img.convert("RGB")
-                img = img.resize((1000, 1000), Image.LANCZOS)
-                buf = io.BytesIO()
-                img.save(buf, format="JPEG")
-                pic.data = buf.getvalue()
+                img_data = cover if isinstance(cover, bytes) else cover
+                if resize_cover:
+                    img = Image.open(io.BytesIO(img_data))
+                    img = img.convert("RGB")
+                    img = img.resize((1000, 1000), Image.LANCZOS)
+                    buf = io.BytesIO()
+                    img.save(buf, format="JPEG")
+                    img_data = buf.getvalue()
+                    pic.mime = "image/jpeg"
+                else:
+                    pic.mime = "image/jpeg" if cover.imageformat == MP4Cover.FORMAT_JPEG else "image/png"
+                pic.data = img_data
                 pic.type = 3
-                pic.mime = "image/jpeg"
                 pic.desc = "Cover"
                 return pic
         elif ext == ".flac":
             audio = FLAC(src)
             if audio.pictures:
                 orig_pic = audio.pictures[0]
-                # Resize image data to 1000x1000
-                img = Image.open(io.BytesIO(orig_pic.data))
-                img = img.convert("RGB")
-                img = img.resize((1000, 1000), Image.LANCZOS)
-                buf = io.BytesIO()
-                img.save(buf, format="JPEG")
+                img_data = orig_pic.data
+                if resize_cover:
+                    img = Image.open(io.BytesIO(img_data))
+                    img = img.convert("RGB")
+                    img = img.resize((1000, 1000), Image.LANCZOS)
+                    buf = io.BytesIO()
+                    img.save(buf, format="JPEG")
+                    img_data = buf.getvalue()
+                    pic_mime = "image/jpeg"
+                else:
+                    pic_mime = orig_pic.mime
                 pic = Picture()
-                pic.data = buf.getvalue()
+                pic.data = img_data
                 pic.type = 3
-                pic.mime = "image/jpeg"
+                pic.mime = pic_mime
                 pic.desc = orig_pic.desc or "Cover"
                 return pic
     except Exception:
@@ -80,7 +93,7 @@ def extract_cover_art(src):
     return None
 
 # Convert files to OPUS and embed cover art if present
-def convert_files(file_list, status_callback, progress_callback):
+def convert_files(file_list, status_callback, progress_callback, resize_cover=True):
     total = len(file_list)
     for idx, src in enumerate(file_list):
         status_callback(f"Converting {os.path.basename(src)} ({idx+1}/{total})...")
@@ -100,7 +113,7 @@ def convert_files(file_list, status_callback, progress_callback):
 
         # --- Extract and embed cover art from source file ---
         try:
-            pic = extract_cover_art(src)
+            pic = extract_cover_art(src, resize_cover=resize_cover)
             if pic:
                 import base64
                 opus = OggOpus(dst)

@@ -54,3 +54,19 @@
         Rectangle:
             pos: self.pos
             size: self.size
+
+<CheckBox>:
+    size_hint_y: None
+    height: 40
+    size_hint_x: None
+    width: 40
+    color: 0.2, 0.8, 0.2, 1
+    background_checkbox_normal: ''
+    background_checkbox_down: ''
+    canvas.before:
+        Color:
+            rgba: (0.1, 0.3, 0.6, 1) if self.active else (0.05, 0.1, 0.2, 1)
+        RoundedRectangle:
+            pos: self.pos
+            size: self.size
+            radius: [8,]

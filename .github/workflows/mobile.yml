@@ -1,0 +1,81 @@
+name: Build iLoveOPUS Mobile
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-android:
+    name: iLoveOPUS(Android)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          pip install buildozer cython
+          sudo apt-get update
+          sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip python3-setuptools python3-wheel python3-virtualenv
+      - name: Build FFMPEG (static libs for Android)
+        run: |
+          git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg
+          cd ffmpeg
+          ./configure --disable-doc --disable-programs --enable-static --disable-shared --disable-debug --target-os=android --enable-cross-compile
+          make -j2
+          cd ..
+      - name: Build APK
+        run: |
+          pip install kivy mutagen pillow
+          pip install buildozer
+          buildozer init
+          sed -i 's/^# *source.include_exts = .*/source.include_exts = py,png,jpg,kv,atlas/' buildozer.spec
+          sed -i 's/^# *requirements = .*/requirements = python3,kivy,mutagen,pillow/' buildozer.spec
+          buildozer -v android debug
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: iLoveOPUS(Android)
+          path: bin/*.apk
+
+  build-ios:
+    name: iLoveOPUS(iOS)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          pip3 install kivy mutagen pillow
+          pip3 install cython
+          brew install autoconf automake libtool pkg-config
+      - name: Build FFMPEG (static libs for iOS)
+        run: |
+          git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg
+          cd ffmpeg
+          ./configure --disable-doc --disable-programs --enable-static --disable-shared --disable-debug --target-os=darwin --enable-cross-compile
+          make -j2
+          cd ..
+      - name: Build iOS app (using toolchain)
+        run: |
+          pip3 install kivy-ios
+          toolchain create iosbuild main.py
+          toolchain build kivy
+          toolchain build pillow
+          toolchain build mutagen
+          toolchain build ffmpeg
+          toolchain create iosbuild main.py
+          toolchain build
+          toolchain package iosbuild
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: iLoveOPUS(iOS)
+          path: iosbuild/dist/*.ipa

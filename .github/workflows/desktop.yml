@@ -1,0 +1,98 @@
+name: Build iLoveOPUS Desktop
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-windows:
+    name: iLoveOPUS Win
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install kivy mutagen pillow pyinstaller
+      - name: Build FFMPEG
+        run: |
+          git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg
+          cd ffmpeg
+          ./configure --disable-doc --disable-programs --enable-static --disable-shared --disable-debug
+          make -j2
+          cd ..
+      - name: Build executable
+        run: |
+          pyinstaller --onefile main.py --name iLoveOPUSWin
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: iLoveOPUS Win
+          path: dist/iLoveOPUSWin.exe
+
+  build-linux:
+    name: iLoveOPUS Linux
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-pip python3-dev build-essential libgl1-mesa-dev
+          python -m pip install --upgrade pip
+          pip install kivy mutagen pillow pyinstaller
+      - name: Build FFMPEG
+        run: |
+          git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg
+          cd ffmpeg
+          ./configure --disable-doc --disable-programs --enable-static --disable-shared --disable-debug
+          make -j2
+          cd ..
+      - name: Build executable
+        run: |
+          pyinstaller --onefile main.py --name iLoveOPUSLinux
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: iLoveOPUS Linux
+          path: dist/iLoveOPUSLinux
+
+  build-macos:
+    name: iLoveOPUS Mac
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          brew install python3
+          python3 -m pip install --upgrade pip
+          pip3 install kivy mutagen pillow pyinstaller
+      - name: Build FFMPEG
+        run: |
+          git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg
+          cd ffmpeg
+          ./configure --disable-doc --disable-programs --enable-static --disable-shared --disable-debug
+          make -j2
+          cd ..
+      - name: Build executable
+        run: |
+          pyinstaller --onefile main.py --name iLoveOPUSMac
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: iLoveOPUS Mac
+          path: dist/iLoveOPUSMac

@@ -1,11 +1,23 @@
 # Set KIVY_GL_BACKEND to sdl2 for Linux, angle_sdl2 for Windows
 import os
 import sys
+
 #add stylesheet to to builds
 if not sys.stderr:
     os.environ['KIVY_NO_CONSOLELOG'] = '1'
-from kivy.resources import resource_add_path
+
 if getattr(sys, 'frozen', False):
+    # PyInstaller bundle: add ffmpeg bundled path to PATH
+    ffmpeg_dirs = [
+        os.path.join(sys._MEIPASS, "ffmpeg-n7.1.1-22-g0f1fe3d153-linux64-gpl-7.1", "bin"),  # Linux
+        os.path.join(sys._MEIPASS, "ffmpeg_bin", "ffmpeg-n7.1.1-22-g0f1fe3d153-winarm64-gpl-7.1", "bin"),  # Windows
+        os.path.join(sys._MEIPASS, "ffmpeg_bin"),  # macOS
+    ]
+    for d in ffmpeg_dirs:
+        if os.path.exists(d):
+            os.environ["PATH"] = d + os.pathsep + os.environ.get("PATH", "")
+    # Add PyInstaller temp path for resource loading (style.kv, etc.)
+    from kivy.resources import resource_add_path
     resource_add_path(sys._MEIPASS)
 
 import threading

@@ -21,13 +21,8 @@ jobs:
           brew install python3
           python3 -m pip install --upgrade pip
           pip3 install kivy mutagen pillow pyinstaller
-      - name: Download FFmpeg binary
-        run: |
-          curl -L -o ffmpeg.zip https://evermeet.cx/ffmpeg/getrelease/zip
-          unzip ffmpeg.zip -d ffmpeg_bin
-      - name: Add FFmpeg to PATH
-        run: |
-          echo "${{ github.workspace }}/ffmpeg_bin" >> $GITHUB_PATH
+      - name: Set up FFmpeg
+        uses: FedericoCarboni/setup-ffmpeg@v3
       - name: Build executable
         run: |
           KIVY_DATA_PATH=$(python3 -c 'import kivy; import os; print(os.path.join(os.path.dirname(kivy.__file__), "data"))')

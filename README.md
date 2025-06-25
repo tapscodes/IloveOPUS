@@ -1,5 +1,5 @@
 # iLoveOPUS
-A program to convert MP3, AAC(M4A), ALAC, and FLAC files to 320kbps OGG OPUS while retaining (most) metadata.
+A program to convert MP3, AAC(M4A), ALAC, and FLAC files to 320kbps OGG OPUS while retaining (most) metadata. Album art is all resized
 
 ## Dependencies
 - Python (https://www.python.org/)

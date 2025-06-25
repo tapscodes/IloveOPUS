@@ -23,6 +23,8 @@ class AudioConverterApp(App):
     progress = NumericProperty(0)
     resize_cover = True
     search_subfolders = True
+    convert_in_place = True
+    delete_original = False
 
     def build(self):
         # Load Kivy style file
@@ -92,6 +94,18 @@ class AudioConverterApp(App):
         options_layout.add_widget(subfolder_label)
         root.add_widget(options_layout)
 
+        # New row for additional options
+        extra_options_layout = Factory.ButtonRow()
+        self.convert_in_place_checkbox = CheckBox(active=True)
+        self.delete_original_checkbox = CheckBox(active=False)
+        convert_in_place_label = Label(text="Convert File In Place", size_hint_y=None, height=40)
+        delete_original_label = Label(text="Delete Original File", size_hint_y=None, height=40)
+        extra_options_layout.add_widget(self.convert_in_place_checkbox)
+        extra_options_layout.add_widget(convert_in_place_label)
+        extra_options_layout.add_widget(self.delete_original_checkbox)
+        extra_options_layout.add_widget(delete_original_label)
+        root.add_widget(extra_options_layout)
+
         # Main control buttons
         btn_layout = Factory.ButtonRow()
         select_btn = Button(text="Select Audio Files")
@@ -121,6 +135,8 @@ class AudioConverterApp(App):
         # Bind checkboxes to update options
         self.resize_checkbox.bind(active=self.on_resize_checkbox)
         self.subfolder_checkbox.bind(active=self.on_subfolder_checkbox)
+        self.convert_in_place_checkbox.bind(active=self.on_convert_in_place_checkbox)
+        self.delete_original_checkbox.bind(active=self.on_delete_original_checkbox)
 
         return root
 
@@ -129,6 +145,12 @@ class AudioConverterApp(App):
 
     def on_subfolder_checkbox(self, instance, value):
         self.search_subfolders = value
+
+    def on_convert_in_place_checkbox(self, instance, value):
+        self.convert_in_place = value
+
+    def on_delete_original_checkbox(self, instance, value):
+        self.delete_original = value
 
     # Clear the selected files list
     def clear_selected_files(self):
@@ -205,8 +227,15 @@ class AudioConverterApp(App):
             self.status_text = text
         def progress_callback(val):
             self.progress = val
-        # Convert files with options set
-        convert_files(self.selected_files, status_callback, progress_callback, resize_cover=self.resize_cover)
+        # Pass new options to convert_files
+        convert_files(
+            self.selected_files,
+            status_callback,
+            progress_callback,
+            resize_cover=self.resize_cover,
+            convert_in_place=self.convert_in_place,
+            delete_original=self.delete_original
+        )
 
 if __name__ == "__main__":
     AudioConverterApp().run()

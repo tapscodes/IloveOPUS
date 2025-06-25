@@ -18,9 +18,18 @@ def get_downloads_folder():
     return downloads if os.path.exists(downloads) else home
 
 # Generate output filename with .opus extension
-def get_output_filename(src):
-    base, _ = os.path.splitext(src)
-    return base + ".opus"
+def get_output_filename(src, convert_in_place=True):
+    if convert_in_place:
+        base, _ = os.path.splitext(src)
+        return base + ".opus"
+    else:
+        # Export to Downloads/opus_exports
+        home = str(Path.home())
+        downloads = os.path.join(home, "Downloads")
+        export_dir = os.path.join(downloads, "opus_exports")
+        os.makedirs(export_dir, exist_ok=True)
+        base = os.path.splitext(os.path.basename(src))[0]
+        return os.path.join(export_dir, base + ".opus")
 
 # Extract embedded cover art from the source file (mp3, m4a/alac, flac)
 def extract_cover_art(src, resize_cover=True):
@@ -93,11 +102,18 @@ def extract_cover_art(src, resize_cover=True):
     return None
 
 # Convert files to OPUS and embed cover art if present
-def convert_files(file_list, status_callback, progress_callback, resize_cover=True):
+def convert_files(
+    file_list,
+    status_callback,
+    progress_callback,
+    resize_cover=True,
+    convert_in_place=True,
+    delete_original=False
+):
     total = len(file_list)
     for idx, src in enumerate(file_list):
         status_callback(f"Converting {os.path.basename(src)} ({idx+1}/{total})...")
-        dst = get_output_filename(src)
+        dst = get_output_filename(src, convert_in_place=convert_in_place)
         # ffmpeg command to convert to OPUS
         cmd = [
             "ffmpeg", "-y", "-i", src,
@@ -123,6 +139,13 @@ def convert_files(file_list, status_callback, progress_callback, resize_cover=Tr
             # else: no cover art found, skip embedding
         except Exception as e:
             status_callback(f"Failed to embed cover art: {e}")
+
+        # Delete original file if requested and conversion succeeded
+        if delete_original:
+            try:
+                os.remove(src)
+            except Exception as e:
+                status_callback(f"Failed to delete original: {e}")
 
         progress_callback(int((idx+1)/total*100))
     status_callback("Done!")

@@ -1,29 +1,59 @@
 #:import get_color_from_hex kivy.utils.get_color_from_hex
 
 <RootWidget@BoxLayout>:
+    orientation: 'vertical'
+    spacing: 10
+    padding: [10, 0, 10, 10]
     canvas.before:
         Color:
             rgba: 0, 0.12, 0.25, 1  # Navy blue
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+<ButtonRow@BoxLayout>:
+    orientation: 'horizontal'
+    size_hint_y: None
+    height: 40
+    spacing: 10
+
+<FileChooserListView>:
+    selection_color: 0, 1, 0, 1
+    selected_color: 0, 1, 0, 1
+    selected_line_color: 0, 1, 0, 1
+    selected_item_color: 0, 1, 0, 0.3
 
 <FileChooserListLayout>:
-    selection_color: 0, 1, 0, 1  # Green for selected files
+    selection_color: 0, 1, 0, 1
+    selected_color: 0, 1, 0, 1
+    selected_line_color: 0, 1, 0, 1
+    selected_item_color: 0, 1, 0, 0.3
 
 <FileChooserIconLayout>:
     selection_color: 0, 1, 0, 1
+    selected_color: 0, 1, 0, 1
+    selected_line_color: 0, 1, 0, 1
+    selected_item_color: 0, 1, 0, 0.3
 
 <Button>:
     background_normal: ''
-    background_color: 0.1, 0.3, 0.6, 1  # Blue-ish
+    background_color: 0.1, 0.3, 0.6, 1
     color: 1, 1, 1, 1
     font_size: 16
+    size_hint_y: None
+    height: 40
 
 <Label>:
     color: 1, 1, 1, 1
     font_size: 16
+    size_hint_y: None
+    height: 24
 
 <ProgressBar>:
     background_color: 0.05, 0.1, 0.2, 1
     color: 0.2, 0.8, 0.2, 1
+    size_hint_y: None
+    height: 20
 
 <FileList>:
     orientation: 'vertical'
@@ -31,7 +61,7 @@
     padding: [0, 0, 0, 0]
     canvas.before:
         Color:
-            rgba: 0, 0.12, 0.25, 0  # Transparent, but you can set to 1 for solid
+            rgba: 0, 0.12, 0.25, 0
         Rectangle:
             pos: self.pos
             size: self.size

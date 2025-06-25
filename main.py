@@ -9,6 +9,7 @@ from kivy.uix.progressbar import ProgressBar
 from kivy.uix.popup import Popup
 from kivy.properties import ListProperty, StringProperty, NumericProperty
 from kivy.lang import Builder
+from kivy.factory import Factory
 
 from filelist import FileList
 from conversion import get_downloads_folder, convert_files
@@ -22,24 +23,21 @@ class AudioConverterApp(App):
     def build(self):
         Builder.load_file("style.kv")
         self.title = "iLoveOPUS"
-        # Use RootWidget for .kv styling
-        root = BoxLayout(orientation='vertical', spacing=10)
-        root.__class__.__name__ = "RootWidget"
+        root = Factory.RootWidget()
 
         # Generate glob patterns from SUPPORTED_EXTS
         file_patterns = [f'*{ext}' for ext in SUPPORTED_EXTS]
 
         def open_file_chooser(instance):
-            # Create a NEW file chooser each time to avoid WidgetException
             file_chooser = FileChooserListView(
                 path=get_downloads_folder(),
                 filters=file_patterns,
                 multiselect=True
             )
-            popup_layout = BoxLayout(orientation='vertical', spacing=10)
+            popup_layout = BoxLayout(orientation='vertical')
             popup_layout.add_widget(file_chooser)
 
-            btn_layout = BoxLayout(orientation='horizontal', size_hint_y=None, height=40, spacing=10)
+            btn_layout = Factory.ButtonRow()
             select_btn = Button(text="Select file(s)")
             cancel_btn = Button(text="Cancel")
             btn_layout.add_widget(select_btn)
@@ -72,8 +70,7 @@ class AudioConverterApp(App):
         self.file_list = FileList()
         root.add_widget(self.file_list)
 
-        # Place select and convert buttons side by side under the file selector
-        btn_layout = BoxLayout(orientation='horizontal', size_hint_y=None, height=40, spacing=10)
+        btn_layout = Factory.ButtonRow()
         select_btn = Button(text="Select Audio Files")
         convert_btn = Button(text="Convert to 320kbps OPUS")
         select_btn.bind(on_release=open_file_chooser)
@@ -82,9 +79,9 @@ class AudioConverterApp(App):
         btn_layout.add_widget(convert_btn)
         root.add_widget(btn_layout)
 
-        self.progress_bar = ProgressBar(max=100, value=0, size_hint_y=None, height=20)
+        self.progress_bar = ProgressBar()
         root.add_widget(self.progress_bar)
-        self.status_label = Label(text=self.status_text, size_hint_y=None, height=30)
+        self.status_label = Label(text=self.status_text)
         root.add_widget(self.status_label)
 
         self.bind(status_text=lambda *a: setattr(self.status_label, 'text', self.status_text))

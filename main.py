@@ -1,16 +1,12 @@
 # Set KIVY_GL_BACKEND to sdl2 for Linux, angle_sdl2 for Windows
 import os
 import sys
-if "KIVY_GL_BACKEND" not in os.environ:
-    if sys.platform.startswith("win"):
-        os.environ["KIVY_GL_BACKEND"] = "angle_sdl2"
-    elif sys.platform.startswith("linux") or sys.platform == "darwin":
-        os.environ["KIVY_GL_BACKEND"] = "sdl2"
-    else:
-        os.environ["KIVY_GL_BACKEND"] = "sdl2"
-if sys.platform.startswith("linux") or sys.platform == "darwin":
-    os.environ.setdefault("KIVY_WINDOW", "sdl2")
-    os.environ.setdefault("KIVY_AUDIO", "sdl2")
+#add stylesheet to to builds
+if not sys.stderr:
+    os.environ['KIVY_NO_CONSOLELOG'] = '1'
+from kivy.resources import resource_add_path
+if getattr(sys, 'frozen', False):
+    resource_add_path(sys._MEIPASS)
 
 import threading
 from kivy.app import App

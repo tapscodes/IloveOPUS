@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-windows:
-    name: iLoveOPUS Win
+    name: iLoveOPUSWin
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -33,11 +33,11 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: iLoveOPUS Win
+          name: iLoveOPUSWin
           path: dist/iLoveOPUSWin.exe
 
   build-linux:
-    name: iLoveOPUS Linux
+    name: iLoveOPUSLinux
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -64,11 +64,11 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: iLoveOPUS Linux
+          name: iLoveOPUSLinux
           path: dist/iLoveOPUSLinux
 
   build-macos:
-    name: iLoveOPUS Mac
+    name: iLoveOPUSMac
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -94,5 +94,5 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: iLoveOPUS Mac
+          name: iLoveOPUSMac
           path: dist/iLoveOPUSMac

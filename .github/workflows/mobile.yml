@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-android:
-    name: iLoveOPUS(Android)
+    name: iLoveOPUSAndroid
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -39,11 +39,11 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: iLoveOPUS(Android)
+          name: iLoveOPUSAndroid
           path: bin/*.apk
 
   build-ios:
-    name: iLoveOPUS(iOS)
+    name: iLoveOPUSiOS
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -77,5 +77,5 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: iLoveOPUS(iOS)
+          name: iLoveOPUSiOS
           path: iosbuild/dist/*.ipa

@@ -4,8 +4,13 @@ import sys
 if "KIVY_GL_BACKEND" not in os.environ:
     if sys.platform.startswith("win"):
         os.environ["KIVY_GL_BACKEND"] = "angle_sdl2"
+    elif sys.platform.startswith("linux") or sys.platform == "darwin":
+        os.environ["KIVY_GL_BACKEND"] = "sdl2"
     else:
         os.environ["KIVY_GL_BACKEND"] = "sdl2"
+if sys.platform.startswith("linux") or sys.platform == "darwin":
+    os.environ.setdefault("KIVY_WINDOW", "sdl2")
+    os.environ.setdefault("KIVY_AUDIO", "sdl2")
 
 import threading
 from kivy.app import App

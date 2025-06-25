@@ -20,35 +20,13 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install kivy mutagen pillow pyinstaller
-      - name: Install nasm
-        run: choco install nasm
-      - name: Build FFMPEG
-        shell: bash
+      - name: Download FFmpeg binary
         run: |
-          git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg
-          cd ffmpeg
-          ./configure \
-            --disable-doc \
-            --disable-programs \
-            --enable-static \
-            --disable-shared \
-            --disable-debug \
-            --enable-libopus \
-            --enable-libmp3lame \
-            --enable-libfdk-aac \
-            --enable-gpl \
-            --enable-nonfree \
-            --enable-pic \
-            --enable-small \
-            --disable-everything \
-            --enable-encoder=libopus,libmp3lame,libfdk_aac \
-            --enable-decoder=mp3,aac,flac,alac,opus \
-            --enable-demuxer=mp3,aac,flac,alac,ogg,wav \
-            --enable-muxer=opus,ogg,mp3,flac,wav \
-            --enable-parser=opus,flac,aac,mp3 \
-            --enable-protocol=file
-          make -j2
-          cd ..
+          curl -L -o ffmpeg.zip https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2025-06-13-13-43/ffmpeg-n7.1.1-22-g0f1fe3d153-winarm64-gpl-7.1.zip
+          unzip ffmpeg.zip -d ffmpeg_bin
+      - name: Add FFmpeg to PATH
+        run: |
+          echo "${{ github.workspace }}/ffmpeg_bin/ffmpeg-n7.1.1-22-g0f1fe3d153-winarm64-gpl-7.1/bin" >> $GITHUB_PATH
       - name: Build executable
         run: |
           pyinstaller --onefile main.py --name iLoveOPUSWin
@@ -71,37 +49,15 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y python3-pip python3-dev build-essential libgl1-mesa-dev
-          sudo apt-get install -y autoconf automake cmake git libtool pkg-config texinfo wget yasm nasm zlib1g-dev libx264-dev libx265-dev libvpx-dev libfdk-aac-dev libmp3lame-dev
           python -m pip install --upgrade pip
           pip install kivy mutagen pillow pyinstaller
-      - name: Install nasm
-        run: sudo apt-get install -y nasm
-      - name: Build FFMPEG
+      - name: Download FFmpeg binary
         run: |
-          git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg
-          cd ffmpeg
-          ./configure \
-            --disable-doc \
-            --disable-programs \
-            --enable-static \
-            --disable-shared \
-            --disable-debug \
-            --enable-libopus \
-            --enable-libmp3lame \
-            --enable-libfdk-aac \
-            --enable-gpl \
-            --enable-nonfree \
-            --enable-pic \
-            --enable-small \
-            --disable-everything \
-            --enable-encoder=libopus,libmp3lame,libfdk_aac \
-            --enable-decoder=mp3,aac,flac,alac,opus \
-            --enable-demuxer=mp3,aac,flac,alac,ogg,wav \
-            --enable-muxer=opus,ogg,mp3,flac,wav \
-            --enable-parser=opus,flac,aac,mp3 \
-            --enable-protocol=file
-          make -j2
-          cd ..
+          curl -L -o ffmpeg.tar.xz https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2025-06-13-13-43/ffmpeg-n7.1.1-22-g0f1fe3d153-linux64-gpl-7.1.tar.xz
+          tar -xf ffmpeg.tar.xz
+      - name: Add FFmpeg to PATH
+        run: |
+          echo "${{ github.workspace }}/ffmpeg-n7.1.1-22-g0f1fe3d153-linux64-gpl-7.1/bin" >> $GITHUB_PATH
       - name: Build executable
         run: |
           pyinstaller --onefile main.py --name iLoveOPUSLinux
@@ -125,32 +81,13 @@ jobs:
           brew install python3
           python3 -m pip install --upgrade pip
           pip3 install kivy mutagen pillow pyinstaller
-      - name: Build FFMPEG
+      - name: Download FFmpeg binary
         run: |
-          git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg
-          cd ffmpeg
-          ./configure \
-            --disable-doc \
-            --disable-programs \
-            --enable-static \
-            --disable-shared \
-            --disable-debug \
-            --enable-libopus \
-            --enable-libmp3lame \
-            --enable-libfdk-aac \
-            --enable-gpl \
-            --enable-nonfree \
-            --enable-pic \
-            --enable-small \
-            --disable-everything \
-            --enable-encoder=libopus,libmp3lame,libfdk_aac \
-            --enable-decoder=mp3,aac,flac,alac,opus \
-            --enable-demuxer=mp3,aac,flac,alac,ogg,wav \
-            --enable-muxer=opus,ogg,mp3,flac,wav \
-            --enable-parser=opus,flac,aac,mp3 \
-            --enable-protocol=file
-          make -j2
-          cd ..
+          curl -L -o ffmpeg.zip https://evermeet.cx/ffmpeg/getrelease/zip
+          unzip ffmpeg.zip -d ffmpeg_bin
+      - name: Add FFmpeg to PATH
+        run: |
+          echo "${{ github.workspace }}/ffmpeg_bin" >> $GITHUB_PATH
       - name: Build executable
         run: |
           pyinstaller --onefile main.py --name iLoveOPUSMac

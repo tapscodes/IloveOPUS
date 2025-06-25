@@ -34,7 +34,8 @@ jobs:
           set KIVY_METRICS_DENSITY=1
           set KIVY_NO_ARGS=1
           set KIVY_NO_CONSOLELOG=1
-          pyinstaller --onefile main.py --name iLoveOPUSWin --add-data "style.kv;." --add-data "%PYTHONPATH%\\Lib\\site-packages\\kivy\\data;kivy/data"
+          for /f "delims=" %%K in ('python -c "import kivy, os; print(os.path.join(os.path.dirname(kivy.__file__), 'data'))"') do set KIVY_DATA_PATH=%%K
+          pyinstaller --onefile main.py --name iLoveOPUSWin --add-data "style.kv;." --add-data "%KIVY_DATA_PATH%;kivy/data"
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:

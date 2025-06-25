@@ -112,19 +112,30 @@ def convert_files(
 ):
     import logging
     from kivy.logger import Logger
+    import shutil
     logging.basicConfig(
         filename="conversion_errors.log",
         filemode="a",
         level=logging.ERROR,
         format="%(asctime)s %(levelname)s: %(message)s"
     )
+
+    # Find the bundled ffmpeg executable
+    ffmpeg_path = shutil.which("ffmpeg")
+    if not ffmpeg_path:
+        error_msg = "FFmpeg executable not found in PATH. Conversion cannot proceed."
+        status_callback(error_msg)
+        logging.error(error_msg)
+        Logger.error(f"conversion: {error_msg}")
+        return
+
     total = len(file_list)
     failed_files = []
     for idx, src in enumerate(file_list):
         status_callback(f"Converting {os.path.basename(src)} ({idx+1}/{total})...")
         dst = get_output_filename(src, convert_in_place=convert_in_place)
         cmd = [
-            "ffmpeg", "-y", "-i", src,
+            ffmpeg_path, "-y", "-i", src,
             "-c:a", "libopus", "-b:a", "192k",
             "-map_metadata", "0",
             dst
@@ -138,6 +149,9 @@ def convert_files(
                 f"Exit code: {e.returncode}\n"
                 f"STDOUT:\n{e.stdout.decode(errors='replace')}\n"
                 f"STDERR:\n{e.stderr.decode(errors='replace')}\n"
+                "NOTE: If you see an error like 'version `OPENSSL_3.2.0' not found', "
+                "the bundled ffmpeg binary may not be compatible with your system's libraries. "
+                "Try using a different ffmpeg build or install ffmpeg from your distribution's package manager."
             )
             status_callback(f"Error converting {os.path.basename(src)} (see log for details)")
             logging.error(error_msg)
